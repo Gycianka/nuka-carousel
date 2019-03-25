@@ -40,9 +40,15 @@ export const getValidChildren = children => {
 const findMaxHeightSlide = slides => {
   let maxHeight = 0;
   for (let i = 0; i < slides.length; i++) {
+    // Make height auto to calculate min real height.
+    slides[i].style.height = 'auto';
+
     if (slides[i].offsetHeight > maxHeight) {
       maxHeight = slides[i].offsetHeight;
     }
+
+    // Make height fit slider's height.
+    slides[i].style.height = '100%';
   }
   return maxHeight;
 };
