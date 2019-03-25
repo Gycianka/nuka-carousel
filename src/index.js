@@ -869,6 +869,10 @@ export default class Carousel extends React.Component {
   }
 
   setFrameRef(ref) {
+    if (!ref) {
+      return;
+    }
+
     this.frame = ref;
 
     // We now have frame and can calculate slide width.
