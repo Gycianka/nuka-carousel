@@ -886,12 +886,9 @@ export default class Carousel extends React.Component {
   }
 
   addImageListeners() {
-    const childNodes = this.getChildNodes();
-    for (let i = 0; i < childNodes.length; i++) {
-      const images = childNodes[i].getElementsByTagName('img');
-      for (let k = 0; k < images.length; k++) {
-        images[k].onload = this.onImageLoaded;
-      }
+    const images = this.frame.getElementsByTagName('img');
+    for (let i = 0; i < images.length; i++) {
+      images[i].onload = this.onImageLoaded;
     }
   }
 
