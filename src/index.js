@@ -53,7 +53,8 @@ export default class Carousel extends React.Component {
       currentSlide: this.props.slideIndex,
       dragging: false,
       easing: this.props.disableAnimation ? '' : easing.easeCircleOut,
-      hasInteraction: false, // to remove animation from the initial slide on the page load when non-default slideIndex is used
+      hasInteraction: false, // to remove animation from the initial slide on the page load when non-default slideIndex
+      // is used
       isWrappingAround: false,
       left: 0,
       resetWrapAroundPosition: false,
@@ -88,13 +89,15 @@ export default class Carousel extends React.Component {
     this.setSlideHeightAndWidth = this.setSlideHeightAndWidth.bind(this);
     this.startAutoplay = this.startAutoplay.bind(this);
     this.stopAutoplay = this.stopAutoplay.bind(this);
+    this.setFrameRef = this.setFrameRef.bind(this);
+    this.addImageListeners = this.addImageListeners.bind(this);
+    this.onImageLoaded = this.onImageLoaded.bind(this);
   }
 
   componentDidMount() {
     // see https://github.com/facebook/react/issues/3417#issuecomment-121649937
     this.mounted = true;
     this.setLeft();
-    this.setDimensions();
     this.bindEvents();
     if (this.props.autoplay) {
       this.startAutoplay();
@@ -423,6 +426,7 @@ export default class Carousel extends React.Component {
       dragging: false
     });
   }
+
   // eslint-disable-next-line complexity
   handleKeyPress(e) {
     if (this.props.enableKeyboardControls) {
@@ -870,6 +874,46 @@ export default class Carousel extends React.Component {
       });
     }
   }
+
+  setFrameRef(ref) {
+    if (!ref) {
+      return;
+    }
+
+    this.frame = ref;
+
+    // We now have frame and can calculate slide width.
+    const { slideWidth } = this.calcSlideHeightAndWidth();
+    this.setState(
+      {
+        slideWidth
+      },
+      () => {
+        // When width is set correctly we can calculate height ant other dimensions as well.
+        this.setDimensions();
+        this.addImageListeners();
+      }
+    );
+  }
+
+  addImageListeners() {
+    const images = this.frame.getElementsByTagName('img');
+    for (let i = 0; i < images.length; i++) {
+      images[i].onload = this.onImageLoaded;
+    }
+  }
+
+  onImageLoaded() {
+    clearTimeout(this.imageTimer);
+    this.imageTimer = setTimeout(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          this.setDimensions();
+        });
+      });
+    }, 100);
+  }
+
   render() {
     const { currentSlide, slideCount, frameWidth } = this.state;
     const {
@@ -917,7 +961,7 @@ export default class Carousel extends React.Component {
         )}
         <div
           className="slider-frame"
-          ref={frame => (this.frame = frame)}
+          ref={this.setFrameRef}
           style={frameStyles}
           {...touchEvents}
           {...mouseEvents}
